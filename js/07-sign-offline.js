@@ -3,6 +3,9 @@ import { Keyring } from '@polkadot/keyring';
 import { Metadata, TypeRegistry } from '@polkadot/types';
 import { cryptoWaitReady, decodeAddress } from '@polkadot/util-crypto';
 
+////////////////////////////////////////////////////////////
+// Step 1: Read and check the unsigned payload.
+////////////////////////////////////////////////////////////
 const [file, expectedGenesis, recipient, amountRao, output = 'signed-transaction.txt'] = process.argv.slice(2);
 if (!file || !/^0x[0-9a-f]{64}$/i.test(expectedGenesis ?? '') || !recipient ||
     !/^[1-9][0-9]*$/.test(amountRao ?? '') || !process.env.SIGNER_URI) {
@@ -29,6 +32,9 @@ if (call.section !== 'balances' || call.method !== 'transferKeepAlive' ||
 const era = registry.createType('ExtrinsicEra', payload.era);
 if (!era.isMortalEra) throw new Error('Expected a mortal transaction.');
 
+////////////////////////////////////////////////////////////
+// Step 2: Check the sender key and sign offline.
+////////////////////////////////////////////////////////////
 const signer = new Keyring({ type: 'sr25519', ss58Format: 42 }).addFromUri(process.env.SIGNER_URI);
 try {
   if (!Buffer.from(signer.publicKey).equals(Buffer.from(decodeAddress(payload.address)))) {
@@ -42,6 +48,10 @@ try {
   const signingPayload = registry.createType('ExtrinsicPayload', payload, { version: payload.version });
   // The SDK handles SCALE encoding, signature type and long-payload hashing.
   const { signature } = signingPayload.sign(signer);
+
+  ////////////////////////////////////////////////////////////
+  // Step 3: Save the signed transaction for online publication.
+  ////////////////////////////////////////////////////////////
   const tx = registry.createType('Extrinsic', { method: payload.method }, { version: payload.version });
   tx.addSignature(signer.address, signature, payload);
   await writeFile(output, tx.toHex() + '\n', { mode: 0o600, flag: 'wx' });
