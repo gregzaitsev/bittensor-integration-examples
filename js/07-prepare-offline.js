@@ -1,19 +1,19 @@
 import { writeFile } from 'node:fs/promises';
 import { connect } from './helpers/connect.js';
 
-const [sender, recipient, amountRao, file = 'offline-payload.json'] = process.argv.slice(2);
-if (!sender || !recipient || !/^[1-9][0-9]*$/.test(amountRao ?? '')) {
-  throw new Error('Usage: node 07-prepare-offline.js <sender> <recipient> <amount-rao> [payload-file]');
-}
+const aliceAddress = '5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY';
+const bobAddress = '5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty';
+const amountRao = '1000000'; // 0.001 TAO
+const file = process.argv[2] ?? 'offline-payload.json';
 const api = await connect();
 try {
-  const tx = api.tx.balances.transferKeepAlive(recipient, amountRao);
-  const nonce = await api.rpc.system.accountNextIndex(sender);
+  const tx = api.tx.balances.transferKeepAlive(bobAddress, amountRao);
+  const nonce = await api.rpc.system.accountNextIndex(aliceAddress);
   let payload;
   const captured = new Error('Payload captured.');
   // Let the SDK build the full payload, but stop before signing.
   try {
-    await tx.signAsync(sender, {
+    await tx.signAsync(aliceAddress, {
       nonce, era: 256,
       signer: {
         async signPayload(value) {
@@ -33,7 +33,7 @@ try {
     metadata: api.runtimeMetadata.toHex(), payload,
   }, null, 2) + '\n', { mode: 0o600, flag: 'wx' });
   console.log(JSON.stringify({
-    file, sender, recipient, amountRao,
+    file, sender: aliceAddress, recipient: bobAddress, amountRao,
     genesisHash: payload.genesisHash, nonce: BigInt(payload.nonce).toString(),
     referenceBlockHash: payload.blockHash,
     referenceHeight: BigInt(payload.blockNumber).toString(),

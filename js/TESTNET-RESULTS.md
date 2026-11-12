@@ -32,7 +32,6 @@ Replay while the endpoint retains this state (otherwise use a testnet archive):
 ```sh
 node 02-block-info.js 8430083
 node 03-transaction-info.js 0x075a07f41ef7e3e074034991f48958ca2b3c2b8be2b2db98a6c581156dc964f6 8430083
-node 04-address-balance.js 5HEdwradEWkQRQveUzR1N4yX2W69XomZAy2x2ctVffBgp16P 8430083
 ```
 
 ## Batch and execution failure

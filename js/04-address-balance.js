@@ -1,17 +1,17 @@
-import { connect, TEST_ADDRESS } from './helpers/connect.js';
+import { connect } from './helpers/connect.js';
 
-const address = process.argv[2] ?? TEST_ADDRESS;
-const height = process.argv[3];
+const aliceAddress = '5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY';
+const height = process.argv[2];
 const api = await connect();
 try {
   const hash = height === undefined
     ? await api.rpc.chain.getFinalizedHead()
     : await api.rpc.chain.getBlockHash(height);
   const at = await api.at(hash);
-  const { data } = await at.query.system.account(address);
+  const { data } = await at.query.system.account(aliceAddress);
   // Keep rao as strings. JavaScript Number can lose precision.
   console.log(JSON.stringify({
-    address, token: 'TAO', decimals: 9, blockHash: hash.toHex(),
+    address: aliceAddress, token: 'TAO', decimals: 9, blockHash: hash.toHex(),
     height: (await api.rpc.chain.getHeader(hash)).number.toString(),
     freeRao: data.free.toString(),
     reservedRao: data.reserved.toString(),

@@ -38,14 +38,15 @@ Run these commands from `js`. Replace arguments in angle brackets.
 | Get block info | `node 02-block-info.js [height]` | Hash, parent, height, time, transaction hashes |
 | Get transaction info | `node 03-transaction-info.js <hash> [from-height] [to-height]` | Finalized status, execution result, transfers, fee, time, type |
 | Get transaction info via Taostats | `node 03-transaction-info-taostats.js <hash>` | Indexed Finney transaction details and all its transfers; API key required |
-| Get address balance | `node 04-address-balance.js [address] [height]` | Free, reserved, frozen and transferable balance before fees |
+| Get address balance | `node 04-address-balance.js [height]` | Free, reserved, frozen and transferable balance before fees |
 | Broadcast transaction | `node 05-broadcast-transaction.js <signed-file>` | Tracks a signed extrinsic until finalized; rejects execution failures |
-| Get gas price / fee | `node 06-estimate-fee.js [sender] [recipient] [amount-rao]` | Estimated native transaction fee |
-| Sign offline, then publish | `node 07-prepare-offline.js ...` → `node 07-sign-offline.js ...` → `node 05-broadcast-transaction.js ...` | Prepare online, sign without RPC, then submit the signed file |
+| Get gas price / fee | `node 06-estimate-fee.js` | Estimated native transaction fee |
+| Sign offline, then publish | `node 07-prepare-offline.js` → `node 07-sign-offline.js` → `node 05-broadcast-transaction.js ...` | Prepare online, sign without RPC, then submit the signed file |
 
 Square brackets mark optional arguments; do not type the brackets.
-Omitted block heights use the finalized head. Balance and fee examples default
-to the public test address below. Amounts and fees use integer **rao** strings:
+Omitted block heights use the finalized head. Examples use Alice as the sender
+and Bob as the recipient. Their keys are public; use them only for demos.
+Amounts and fees use integer **rao** strings:
 `1 TAO = 1,000,000,000 rao`. Avoid floating point for money.
 The fee example defaults to `1,000,000 rao` (0.001 TAO).
 Free balance is not the same as spendable balance. Keep enough for the fee and
@@ -112,7 +113,7 @@ node create-address.js
 This creates an sr25519 account with SS58 prefix 42 and prints a new mnemonic.
 Run it in a private terminal: the mnemonic output is secret.
 
-The test address is:
+Earlier test runs used this public test address:
 
 ```text
 5HEdwradEWkQRQveUzR1N4yX2W69XomZAy2x2ctVffBgp16P
@@ -122,14 +123,10 @@ The test address is:
 this repository. The same address format can be used on both networks; network
 selection comes from the RPC endpoint.
 
-To prepare a transfer, load your own mnemonic or derivation URI through an
-environment variable. For example, in Bash:
+To sign a transfer of 0.001 TAO from Alice to Bob:
 
 ```sh
-read -rs -p 'Signer URI: ' SIGNER_URI; echo
-export SIGNER_URI
-node sign-transfer.js <recipient> 1000000
-unset SIGNER_URI
+node sign-transfer.js
 node 05-broadcast-transaction.js signed-transaction.txt
 ```
 
@@ -148,32 +145,27 @@ use example 03 to confirm the expected transfer event.
 ### 07. Offline signing and publication
 
 Install dependencies on both machines before disconnecting the signer.
-The private key is needed only for step 2. The payload and signed file contain
-no private key. Both scripts refuse to overwrite existing output files.
+Alice signs in step 2 using her public demo key. Both scripts refuse to
+overwrite existing output files. Fund Alice on testnet before publishing.
 
 1. On the online machine, prepare a native TAO transfer:
 
    ```sh
-   NETWORK=testnet node 07-prepare-offline.js <sender> <recipient> 1000000
+   NETWORK=testnet node 07-prepare-offline.js
    ```
 
    This writes `offline-payload.json` with runtime metadata and the SDK signing
    payload: call, nonce, genesis hash, mortality reference, runtime versions and
    signed extensions. It does not sign or submit anything.
 
-2. Copy the payload to the disconnected machine. Obtain the expected genesis
-   hash from trusted network settings; do not trust a hash only because it is
-   inside the payload. For the testnet used in our tests it is
-   `0x8f9cf856bf558a14440e75569c9e58594757048d7b3a84b5d25f6bd978263105`.
-   Use metadata from your trusted preparation machine: the signer uses it to
-   decode and check the call.
+2. Copy the payload to the disconnected machine and sign Alice's transfer to Bob:
 
    ```sh
-   read -rs -p 'Signer URI: ' SIGNER_URI; echo
-   export SIGNER_URI
-   node 07-sign-offline.js offline-payload.json <expected-genesis-hash> <recipient> 1000000
-   unset SIGNER_URI
+   node 07-sign-offline.js
    ```
+
+   The expected genesis hash defaults to testnet. The signer uses metadata
+   from the trusted preparation machine to decode and check the call.
 
    The signer imports no API client and makes no network requests. It checks
    the genesis hash, sender key, recipient, integer amount, zero tip, mortal
@@ -191,7 +183,8 @@ no private key. Both scripts refuse to overwrite existing output files.
 
    The first command waits for finalization and checks execution. The second
    checks the actual transfer event. For mainnet, prepare and publish with
-   `NETWORK=mainnet` and give the signer the trusted mainnet genesis hash.
+   `NETWORK=mainnet` and pass the trusted mainnet genesis hash as the second
+   argument to `07-sign-offline.js` (after the payload filename).
 
 Submit within the 256-block mortal era. A runtime upgrade, another transaction
 using the same nonce, or expiry may require a new payload and signature.

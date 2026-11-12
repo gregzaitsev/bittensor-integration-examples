@@ -1,8 +1,5 @@
 import { ApiPromise, WsProvider } from '@polkadot/api';
 
-export const TEST_ADDRESS = '5HEdwradEWkQRQveUzR1N4yX2W69XomZAy2x2ctVffBgp16P';
-// This address has a well-known seed. Use it only on testnet.
-
 export const ENDPOINTS = {
   testnet: 'wss://test.finney.opentensor.ai:443',
   mainnet: 'wss://entrypoint-finney.opentensor.ai:443',
