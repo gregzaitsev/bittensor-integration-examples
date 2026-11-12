@@ -12,7 +12,7 @@ if (!file || !/^0x[0-9a-f]{64}$/i.test(expectedGenesis ?? '') || !recipient ||
   throw new Error('Set SIGNER_URI; usage: node 07-sign-offline.js <payload-file> <expected-genesis-hash> <recipient> <amount-rao> [signed-file]');
 }
 
-// No API client or network connection is used on this machine.
+// This script does not use an API client or make network requests.
 await cryptoWaitReady();
 const { metadata, payload } = JSON.parse(await readFile(file, 'utf8'));
 const registry = new TypeRegistry();
