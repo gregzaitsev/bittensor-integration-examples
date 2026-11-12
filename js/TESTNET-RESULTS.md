@@ -48,6 +48,24 @@ node 04-address-balance.js 5HEdwradEWkQRQveUzR1N4yX2W69XomZAy2x2ctVffBgp16P 8430
   Example 03 confirmed block `8430093`, `success: false`, no transfers and
   an actual fee of `101876` rao.
 
+## Offline signing (example 07)
+
+- Prepared a transfer online with `07-prepare-offline.js`: nonce `3`,
+  reference height `8430219`, mortal era `256` blocks.
+- Ran `07-sign-offline.js` in a separate Node.js process with TCP/UDP socket
+  creation, fetch and WebSocket connections blocked by a test preload.
+  Signing completed without network calls; no API client is imported.
+- Verified the signature independently against the payload and checked the
+  signed SCALE call and nonce.
+- Rejected wrong genesis, recipient, amount, sender key and extension list.
+- Published the signed file using `05-broadcast-transaction.js`.
+- Finalized hash:
+  `0x20105b05c5019a86023a4d3757c3ff4d2f1e4383b4b9377754d50aa972b818a2`.
+- Block `8430226`, extrinsic index `5`, block hash:
+  `0xd414271883fe0c1cffc5d3052a91f1a85d566e2bd9d4e2fe8530a10060272df4`.
+- Example 03 confirmed the actual transfer of `1000000` rao to the expected
+  recipient, event index `82`, and a fee of `101874` rao.
+
 ## Runtime notices
 
 Polkadot.js logged unknown custom signed extensions and undecorated custom RPC

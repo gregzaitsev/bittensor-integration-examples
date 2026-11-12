@@ -1,3 +1,4 @@
 node_modules/
 .env
 signed-transaction.txt
+offline-payload.json

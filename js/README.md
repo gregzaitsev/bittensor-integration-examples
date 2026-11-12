@@ -41,6 +41,7 @@ Run these commands from `js`. Replace arguments in angle brackets.
 | Get address balance | `node 04-address-balance.js [address] [height]` | Free, reserved, frozen and transferable balance before fees |
 | Broadcast transaction | `node 05-broadcast-transaction.js <signed-file>` | Tracks a signed extrinsic until finalized; rejects execution failures |
 | Get gas price / fee | `node 06-estimate-fee.js [sender] [recipient] [amount-rao]` | Estimated native transaction fee |
+| Sign offline, then publish | `node 07-prepare-offline.js ...` → `node 07-sign-offline.js ...` → `node 05-broadcast-transaction.js ...` | Prepare online, sign without RPC, then submit the signed file |
 
 Square brackets mark optional arguments; do not type the brackets.
 Omitted block heights use the finalized head. Balance and fee examples default
@@ -143,6 +144,60 @@ A submission timeout, dropped connection or replacement leaves the result
 uncertain. Save the transaction hash before sending, then reconcile it on-chain
 before signing a replacement. Submission output confirms extrinsic success;
 use example 03 to confirm the expected transfer event.
+
+### 07. Offline signing and publication
+
+Install dependencies on both machines before disconnecting the signer.
+The private key is needed only for step 2. The payload and signed file contain
+no private key. Both scripts refuse to overwrite existing output files.
+
+1. On the online machine, prepare a native TAO transfer:
+
+   ```sh
+   NETWORK=testnet node 07-prepare-offline.js <sender> <recipient> 1000000
+   ```
+
+   This writes `offline-payload.json` with runtime metadata and the SDK signing
+   payload: call, nonce, genesis hash, mortality reference, runtime versions and
+   signed extensions. It does not sign or submit anything.
+
+2. Copy the payload to the disconnected machine. Obtain the expected genesis
+   hash from trusted network settings; do not trust a hash only because it is
+   inside the payload. For the testnet used in our tests it is
+   `0x8f9cf856bf558a14440e75569c9e58594757048d7b3a84b5d25f6bd978263105`.
+   Use metadata from your trusted preparation machine: the signer uses it to
+   decode and check the call.
+
+   ```sh
+   read -rs -p 'Signer URI: ' SIGNER_URI; echo
+   export SIGNER_URI
+   node 07-sign-offline.js offline-payload.json <expected-genesis-hash> <recipient> 1000000
+   unset SIGNER_URI
+   ```
+
+   The signer imports no API client and makes no network requests. It checks
+   the genesis hash, sender key, recipient, integer amount, zero tip, mortal
+   era and extension list. This small example supports v4
+   `balances.transferKeepAlive` calls. It signs with sr25519 and writes the
+   complete signed SCALE extrinsic to `signed-transaction.txt`.
+
+3. Copy only the signed file back to the online machine and publish it on the
+   same network:
+
+   ```sh
+   NETWORK=testnet node 05-broadcast-transaction.js signed-transaction.txt
+   NETWORK=testnet node 03-transaction-info.js <returned-tx-hash> <returned-height>
+   ```
+
+   The first command waits for finalization and checks execution. The second
+   checks the actual transfer event. For mainnet, prepare and publish with
+   `NETWORK=mainnet` and give the signer the trusted mainnet genesis hash.
+
+Submit within the 256-block mortal era. A runtime upgrade, another transaction
+using the same nonce, or expiry may require a new payload and signature.
+Never reuse the nonce for another withdrawal before reconciling the first one.
+This is a file-based offline example, not an HSM integration. See the
+[Polkadot.js offline-signing guidance](https://polkadot.js.org/docs/api/FAQ/#i-would-like-to-sign-transactions-offline).
 
 ## Validation
 
