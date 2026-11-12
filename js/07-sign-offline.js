@@ -8,10 +8,10 @@ import { cryptoWaitReady, decodeAddress } from '@polkadot/util-crypto';
 ////////////////////////////////////////////////////////////
 const bobAddress = '5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty';
 const amountRao = '1000000'; // 0.001 TAO
-// Default to testnet; pass a trusted genesis hash when using another network.
-const [file = 'offline-payload.json',
-  expectedGenesis = '0x8f9cf856bf558a14440e75569c9e58594757048d7b3a84b5d25f6bd978263105',
-  output = 'signed-transaction.txt'] = process.argv.slice(2);
+const file = 'offline-payload.json';
+const output = 'signed-transaction.txt';
+// Testnet genesis hash; change this for another network.
+const expectedGenesis = '0x8f9cf856bf558a14440e75569c9e58594757048d7b3a84b5d25f6bd978263105';
 
 // This script does not use an API client or make network requests.
 await cryptoWaitReady();

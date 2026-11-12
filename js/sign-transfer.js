@@ -5,7 +5,7 @@ import { connect } from './helpers/connect.js';
 
 const bobAddress = '5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty';
 const amountRao = '1000000'; // 0.001 TAO
-const file = process.argv[2] ?? 'signed-transaction.txt';
+const file = 'signed-transaction.txt';
 await cryptoWaitReady();
 // Alice has a well-known key. Use only for demos.
 const alice = new Keyring({ type: 'sr25519', ss58Format: 42 }).addFromUri('//Alice');

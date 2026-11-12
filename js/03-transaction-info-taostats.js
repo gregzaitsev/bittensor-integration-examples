@@ -1,4 +1,4 @@
-const txHash = process.argv[2];
+const txHash = '0x2df4489fe3603d85995c558497daf2cf1eab4a818610dc32f1b26e0745fce517'; // Example Finney transaction.
 const apiKey = process.env.TAOSTATS_API_KEY;
 if (!apiKey) throw new Error('Set TAOSTATS_API_KEY.');
 // These endpoints use Finney; the RPC examples default to testnet.

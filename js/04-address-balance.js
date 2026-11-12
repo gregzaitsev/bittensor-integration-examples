@@ -1,13 +1,10 @@
 import { connect } from './helpers/connect.js';
 
 const aliceAddress = '5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY';
-const height = process.argv[2];
+const height = 8430289; // Example testnet block height.
 const api = await connect();
 try {
-  // With no height, read Alice's balance at the latest finalized block.
-  const hash = height === undefined
-    ? await api.rpc.chain.getFinalizedHead()
-    : await api.rpc.chain.getBlockHash(height);
+  const hash = await api.rpc.chain.getBlockHash(height);
   const at = await api.at(hash);
   const { data } = await at.query.system.account(aliceAddress);
   // Keep rao as strings. JavaScript Number can lose precision.

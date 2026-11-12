@@ -30,22 +30,20 @@ RPC_URL=ws://127.0.0.1:9944 node 01-latest-block.js
 
 ## API examples
 
-Run these commands from `js`. Replace arguments in angle brackets.
+Run these commands from `js`. Change example values directly in the code.
 
 | Requirement | Command | Result |
 | --- | --- | --- |
 | Get latest block height | `node 01-latest-block.js` | Best and finalized heights |
-| Get block info | `node 02-block-info.js [height]` | Hash, parent, height, time, transaction hashes |
-| Get transaction info | `node 03-transaction-info.js <hash> [from-height] [to-height]` | Finalized status, execution result, transfers, fee, time, type |
-| Get transaction info via Taostats | `node 03-transaction-info-taostats.js <hash>` | Indexed Finney transaction details and all its transfers; API key required |
-| Get address balance | `node 04-address-balance.js [height]` | Free, reserved, frozen and transferable balance before fees |
-| Broadcast transaction | `node 05-broadcast-transaction.js [signed-file]` | Tracks a signed extrinsic until finalized; rejects execution failures |
+| Get block info | `node 02-block-info.js` | Hash, parent, height, time, transaction hashes |
+| Get transaction info | `node 03-transaction-info.js` | Finalized status, execution result, transfers, fee, time, type |
+| Get transaction info via Taostats | `node 03-transaction-info-taostats.js` | Indexed Finney transaction details and all its transfers; API key required |
+| Get address balance | `node 04-address-balance.js` | Free, reserved, frozen and transferable balance before fees |
+| Broadcast transaction | `node 05-broadcast-transaction.js` | Tracks a signed extrinsic until finalized; rejects execution failures |
 | Get gas price / fee | `node 06-estimate-fee.js` | Estimated native transaction fee |
-| Sign offline, then publish | `node 07-prepare-offline.js` → `node 07-sign-offline.js` → `node 05-broadcast-transaction.js ...` | Prepare online, sign without RPC, then submit the signed file |
+| Sign offline, then publish | `node 07-prepare-offline.js` → `node 07-sign-offline.js` → `node 05-broadcast-transaction.js` | Prepare online, sign without RPC, then submit the signed file |
 
-Square brackets mark optional arguments; do not type the brackets.
-Omitted block heights use the finalized head. Examples use Alice as the sender
-and Bob as the recipient. Their keys are public; use them only for demos.
+Examples use Alice as the sender and Bob as the recipient. Their keys are public; use them only for demos.
 Amounts and fees use integer **rao** strings:
 `1 TAO = 1,000,000,000 rao`. Avoid floating point for money.
 The fee example defaults to `1,000,000 rao` (0.001 TAO).
@@ -54,17 +52,16 @@ the existential deposit when using `transferKeepAlive`.
 
 ### Finding and checking transactions
 
-Substrate RPC does not have a transaction-hash lookup. Example 03 searches the
-last 100 finalized blocks by default. Supply one known block height for a fast
-lookup, or two heights for a range. A miss means only that the hash was not in
-that range. Old event/state queries require an archive node.
+Substrate RPC does not have a transaction-hash lookup. Example 03 uses a known
+transaction hash and block height set in the code. Use Taostats to find an
+unknown height. Old event/state queries require an archive node.
 
 For historical discovery on mainnet, run the standalone Taostats example:
 
 ```sh
 read -rs -p 'Taostats API key: ' TAOSTATS_API_KEY; echo
 export TAOSTATS_API_KEY
-NETWORK=mainnet node 03-transaction-info-taostats.js <mainnet-tx-hash>
+NETWORK=mainnet node 03-transaction-info-taostats.js
 unset TAOSTATS_API_KEY
 ```
 
@@ -81,10 +78,11 @@ See [extrinsics](https://taostats.io/docs/api-reference/chain/get-extrinsics)
 and [transfers](https://taostats.io/docs/api-reference/transfers/get-transfers).
 
 Indexed data can lag and is not proof of finality. Use the returned height to
-check the hash and actual events with trusted mainnet RPC:
+set `txHash` and `height` in example 03, then check actual events with trusted
+mainnet RPC:
 
 ```sh
-NETWORK=archive node 03-transaction-info.js <mainnet-tx-hash> <height>
+NETWORK=archive node 03-transaction-info.js
 ```
 
 The Taostats example was checked locally with simulated paginated responses
@@ -127,7 +125,7 @@ To sign a transfer of 0.001 TAO from Alice to Bob:
 
 ```sh
 node sign-transfer.js
-node 05-broadcast-transaction.js signed-transaction.txt
+node 05-broadcast-transaction.js
 ```
 
 `sign-transfer.js` signs locally using current RPC metadata and nonce, and
@@ -164,7 +162,7 @@ overwrite existing output files. Fund Alice on testnet before publishing.
    node 07-sign-offline.js
    ```
 
-   The expected genesis hash defaults to testnet. The signer uses metadata
+   `expectedGenesis` is set to testnet. The signer uses metadata
    from the trusted preparation machine to decode and check the call.
 
    The signer imports no API client and makes no network requests. It checks
@@ -177,14 +175,13 @@ overwrite existing output files. Fund Alice on testnet before publishing.
    same network:
 
    ```sh
-   NETWORK=testnet node 05-broadcast-transaction.js signed-transaction.txt
-   NETWORK=testnet node 03-transaction-info.js <returned-tx-hash> <returned-height>
+   NETWORK=testnet node 05-broadcast-transaction.js
    ```
 
-   The first command waits for finalization and checks execution. The second
-   checks the actual transfer event. For mainnet, prepare and publish with
-   `NETWORK=mainnet` and pass the trusted mainnet genesis hash as the second
-   argument to `07-sign-offline.js` (after the payload filename).
+   This waits for finalization and checks execution. Set the returned hash
+   and height in example 03 to check transfer events. For mainnet, prepare
+   and publish with `NETWORK=mainnet` and change `expectedGenesis` in
+   `07-sign-offline.js` to the trusted mainnet genesis hash.
 
 Submit within the 256-block mortal era. A runtime upgrade, another transaction
 using the same nonce, or expiry may require a new payload and signature.

@@ -4,7 +4,7 @@ import { connect } from './helpers/connect.js';
 const aliceAddress = '5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY';
 const bobAddress = '5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty';
 const amountRao = '1000000'; // 0.001 TAO
-const file = process.argv[2] ?? 'offline-payload.json';
+const file = 'offline-payload.json';
 const api = await connect();
 try {
   const tx = api.tx.balances.transferKeepAlive(bobAddress, amountRao);

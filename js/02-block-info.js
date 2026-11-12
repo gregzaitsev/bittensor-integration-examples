@@ -1,12 +1,9 @@
 import { connect } from './helpers/connect.js';
 
+const height = 8430289; // Example testnet block height.
 const api = await connect();
 try {
-  const height = process.argv[2];
-  // With no height, show the latest finalized block.
-  const hash = height === undefined
-    ? await api.rpc.chain.getFinalizedHead()
-    : await api.rpc.chain.getBlockHash(height);
+  const hash = await api.rpc.chain.getBlockHash(height);
   const { block } = await api.rpc.chain.getBlock(hash);
   const at = await api.at(hash);
   const timestampMs = (await at.query.timestamp.now()).toString();
