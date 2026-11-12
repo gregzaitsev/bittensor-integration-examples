@@ -37,6 +37,7 @@ Run these commands from `js`. Replace arguments in angle brackets.
 | Get latest block height | `node 01-latest-block.js` | Best and finalized heights |
 | Get block info | `node 02-block-info.js [height]` | Hash, parent, height, time, transaction hashes |
 | Get transaction info | `node 03-transaction-info.js <hash> [from-height] [to-height]` | Finalized status, execution result, transfers, fee, time, type |
+| Get transaction info via Taostats | `node 03-transaction-info-taostats.js <hash>` | Indexed Finney transaction details and all its transfers; API key required |
 | Get address balance | `node 04-address-balance.js [address] [height]` | Free, reserved, frozen and transferable balance before fees |
 | Broadcast transaction | `node 05-broadcast-transaction.js <signed-file>` | Tracks a signed extrinsic until finalized; rejects execution failures |
 | Get gas price / fee | `node 06-estimate-fee.js [sender] [recipient] [amount-rao]` | Estimated native transaction fee |
@@ -56,11 +57,37 @@ last 100 finalized blocks by default. Supply one known block height for a fast
 lookup, or two heights for a range. A miss means only that the hash was not in
 that range. Old event/state queries require an archive node.
 
-For historical discovery on mainnet, use the Taostats index described in the
-source document: `GET https://api.taostats.io/v1/extrinsics?hash=<hash>` with
-`Authorization: <API_KEY>`. Use its block number with example 03. Index results
-are hints; confirm deposits against trusted RPC. No Taostats key is needed for
-these examples. Arbitrary indexed history is not part of the testnet tests.
+For historical discovery on mainnet, run the standalone Taostats example:
+
+```sh
+read -rs -p 'Taostats API key: ' TAOSTATS_API_KEY; echo
+export TAOSTATS_API_KEY
+NETWORK=mainnet node 03-transaction-info-taostats.js <mainnet-tx-hash>
+unset TAOSTATS_API_KEY
+```
+
+It requests `/v1/extrinsics?hash=<hash>` and
+`/v1/transfers?transaction_hash=<hash>`, follows all pages, and keeps amounts
+and fees as rao strings. A transaction can have no transfers or several.
+The outer fee is reported once. `indexedTransferId` is an indexer ID, not the
+on-chain event ID used by the RPC example.
+
+This example always queries Finney mainnet. These Taostats endpoints do not
+accept `network=testnet`; `RPC_URL` does not affect them. Only this example
+needs `TAOSTATS_API_KEY`, sent as `Authorization: <API_KEY>` without `Bearer`.
+See [extrinsics](https://taostats.io/docs/api-reference/chain/get-extrinsics)
+and [transfers](https://taostats.io/docs/api-reference/transfers/get-transfers).
+
+Indexed data can lag and is not proof of finality. Use the returned height to
+check the hash and actual events with trusted mainnet RPC:
+
+```sh
+NETWORK=archive node 03-transaction-info.js <mainnet-tx-hash> <height>
+```
+
+The Taostats example was checked locally with simulated paginated responses
+and HTTP errors. An authenticated live request was not tested because no API
+key was available. It is not part of the testnet results.
 
 Example 03 reports actual `balances.Transfer` events, including transfers in
 batch/proxy calls. `signer` is the outer signer; each transfer has its own
