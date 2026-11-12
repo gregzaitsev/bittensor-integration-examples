@@ -11,9 +11,6 @@ const amountRao = '1000000'; // 0.001 TAO
 const [file = 'offline-payload.json',
   expectedGenesis = '0x8f9cf856bf558a14440e75569c9e58594757048d7b3a84b5d25f6bd978263105',
   output = 'signed-transaction.txt'] = process.argv.slice(2);
-if (!/^0x[0-9a-f]{64}$/i.test(expectedGenesis)) {
-  throw new Error('Usage: node 07-sign-offline.js [payload-file] [expected-genesis-hash] [signed-file]');
-}
 
 // This script does not use an API client or make network requests.
 await cryptoWaitReady();

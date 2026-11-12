@@ -1,9 +1,6 @@
 import { connect } from './helpers/connect.js';
 
 const [txHash, fromHeight, toHeight = fromHeight] = process.argv.slice(2);
-if (!/^0x[0-9a-f]{64}$/i.test(txHash ?? '')) {
-  throw new Error('Usage: node 03-transaction-info.js <tx-hash> [from-height] [to-height]');
-}
 const api = await connect();
 try {
   const finalizedHash = await api.rpc.chain.getFinalizedHead();

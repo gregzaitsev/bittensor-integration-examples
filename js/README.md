@@ -39,7 +39,7 @@ Run these commands from `js`. Replace arguments in angle brackets.
 | Get transaction info | `node 03-transaction-info.js <hash> [from-height] [to-height]` | Finalized status, execution result, transfers, fee, time, type |
 | Get transaction info via Taostats | `node 03-transaction-info-taostats.js <hash>` | Indexed Finney transaction details and all its transfers; API key required |
 | Get address balance | `node 04-address-balance.js [height]` | Free, reserved, frozen and transferable balance before fees |
-| Broadcast transaction | `node 05-broadcast-transaction.js <signed-file>` | Tracks a signed extrinsic until finalized; rejects execution failures |
+| Broadcast transaction | `node 05-broadcast-transaction.js [signed-file]` | Tracks a signed extrinsic until finalized; rejects execution failures |
 | Get gas price / fee | `node 06-estimate-fee.js` | Estimated native transaction fee |
 | Sign offline, then publish | `node 07-prepare-offline.js` → `node 07-sign-offline.js` → `node 05-broadcast-transaction.js ...` | Prepare online, sign without RPC, then submit the signed file |
 

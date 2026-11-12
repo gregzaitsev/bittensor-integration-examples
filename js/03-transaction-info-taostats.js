@@ -1,7 +1,4 @@
 const txHash = process.argv[2];
-if (!/^0x[0-9a-f]{64}$/i.test(txHash ?? '')) {
-  throw new Error('Usage: node 03-transaction-info-taostats.js <tx-hash>');
-}
 const apiKey = process.env.TAOSTATS_API_KEY;
 if (!apiKey) throw new Error('Set TAOSTATS_API_KEY.');
 if (process.env.NETWORK && process.env.NETWORK !== 'mainnet' && process.env.NETWORK !== 'archive') {
