@@ -192,12 +192,5 @@ Never reuse the nonce for another withdrawal before reconciling the first one.
 This is a file-based offline example, not an HSM integration. See the
 [Polkadot.js offline-signing guidance](https://polkadot.js.org/docs/api/FAQ/#i-would-like-to-sign-transactions-offline).
 
-## Validation
-
-See [TESTNET-RESULTS.md](TESTNET-RESULTS.md) for the actual test run.
-Mainnet endpoints are provided for integration; no mainnet transactions are sent.
-Public endpoints may rate-limit requests. Use trusted redundant nodes in production.
-Runtime upgrades can change metadata and signed extensions; recheck signing after upgrades.
-
 References: [blocks and events](https://polkadot.js.org/docs/api/cookbook/blocks/),
 [transaction finality](https://polkadot.js.org/docs/api/start/api.tx.subs/).
