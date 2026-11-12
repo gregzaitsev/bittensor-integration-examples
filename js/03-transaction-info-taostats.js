@@ -1,6 +1,7 @@
 const txHash = process.argv[2];
 const apiKey = process.env.TAOSTATS_API_KEY;
 if (!apiKey) throw new Error('Set TAOSTATS_API_KEY.');
+// These endpoints use Finney; the RPC examples default to testnet.
 if (process.env.NETWORK && process.env.NETWORK !== 'mainnet' && process.env.NETWORK !== 'archive') {
   throw new Error('This Taostats example uses Finney mainnet. Use NETWORK=mainnet or unset NETWORK.');
 }
@@ -8,12 +9,14 @@ if (process.env.NETWORK && process.env.NETWORK !== 'mainnet' && process.env.NETW
 async function getAll(path, params) {
   const rows = [];
   let page = 1;
+  // Read all pages: one transaction can have many transfers.
   while (page !== null) {
     const url = new URL(`https://api.taostats.io/v1/${path}`);
     url.search = new URLSearchParams({ ...params, network: 'finney', limit: '200', page: String(page) });
     const response = await fetch(url, {
       // Send the key directly, without a Bearer prefix.
       headers: { Authorization: apiKey, Accept: 'application/json' },
+      // Limit waiting to 30s; reject redirects to keep the key on this host.
       signal: AbortSignal.timeout(30_000),
       redirect: 'error',
     });
@@ -22,6 +25,7 @@ async function getAll(path, params) {
     }
     const body = await response.json();
     const next = body.pagination?.next_page;
+    // Reject broken pages instead of returning incomplete data or looping.
     if (!Array.isArray(body.data) || (next !== null && (!Number.isSafeInteger(next) || next <= page))) {
       throw new Error(`Unexpected Taostats ${path} response.`);
     }
@@ -32,6 +36,7 @@ async function getAll(path, params) {
 }
 
 const extrinsics = await getAll('extrinsics', { hash: txHash });
+// No indexed record can mean an indexing delay, not a failed transaction.
 if (extrinsics.length === 0) {
   throw new Error('Transaction not indexed on Finney. Check the hash or try again later.');
 }

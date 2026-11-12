@@ -34,6 +34,7 @@ export async function submitAndWait(api, signedHex) {
           reject(error);
         }
       }).then((stop) => {
+        // If a timeout happened first, close the late subscription too.
         if (finished) stop();
         else unsubscribe = stop;
       }, reject);

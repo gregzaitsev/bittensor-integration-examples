@@ -10,6 +10,7 @@ try {
   const fee = await tx.paymentInfo(aliceAddress);
   console.log(JSON.stringify({
     token: 'TAO', estimatedFeeRao: fee.partialFee.toString(),
+    // Runtime work limits returned with the fee estimate; not EVM gas units.
     weight: fee.weight.toJSON(),
   }, null, 2));
 } finally {

@@ -7,9 +7,11 @@ export const ENDPOINTS = {
 };
 
 export async function connect() {
+  // Default to testnet; RPC_URL allows a private node or another endpoint.
   const network = process.env.NETWORK ?? 'testnet';
   const endpoint = process.env.RPC_URL ?? ENDPOINTS[network];
   if (!endpoint) throw new Error('Use NETWORK=testnet, mainnet or archive, or set RPC_URL.');
+  // Connect explicitly; 30s is the demo RPC timeout.
   const provider = new WsProvider(endpoint, false, {}, 30_000);
   try {
     await provider.connect();

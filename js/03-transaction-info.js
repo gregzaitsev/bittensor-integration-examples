@@ -1,13 +1,17 @@
 import { connect } from './helpers/connect.js';
 
+// RPC cannot find a block by transaction hash. Heights only limit the search.
+// One height checks one block; two heights search a range.
+// Use Taostats to find an unknown block height by hash.
 const [txHash, fromHeight, toHeight = fromHeight] = process.argv.slice(2);
 const api = await connect();
 try {
   const finalizedHash = await api.rpc.chain.getFinalizedHead();
   const finalizedHeight = (await api.rpc.chain.getHeader(finalizedHash)).number.toNumber();
-  // RPC has no hash index. Default search: last 100 finalized blocks.
+  // With no heights, search the last 100 finalized blocks (a demo limit).
   const start = fromHeight === undefined ? Math.max(0, finalizedHeight - 99) : Number(fromHeight);
   const end = toHeight === undefined ? finalizedHeight : Number(toHeight);
+  // This example checks finalized transactions only.
   if (!Number.isSafeInteger(start) || !Number.isSafeInteger(end) || start < 0 || end < start || end > finalizedHeight) {
     throw new Error('Use a valid range of finalized block heights.');
   }
@@ -52,6 +56,7 @@ try {
     }, null, 2));
     break;
   }
+  // A miss only means the hash was not in this range.
   if (!found) throw new Error(`Not found in finalized blocks ${start}..${end}. Use the indexed block height or another range.`);
 } finally {
   await api.disconnect();

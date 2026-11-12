@@ -4,6 +4,7 @@ const aliceAddress = '5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY';
 const height = process.argv[2];
 const api = await connect();
 try {
+  // With no height, read Alice's balance at the latest finalized block.
   const hash = height === undefined
     ? await api.rpc.chain.getFinalizedHead()
     : await api.rpc.chain.getBlockHash(height);
@@ -16,7 +17,7 @@ try {
     freeRao: data.free.toString(),
     reservedRao: data.reserved.toString(),
     frozenRao: data.frozen.toString(),
-    // This is a balance limit, not a promise that a transfer will pass.
+    // Free minus frozen, floored at zero; fees and keep-alive limits still apply.
     transferableBeforeFeesRao: (data.free.toBigInt() > data.frozen.toBigInt()
       ? data.free.toBigInt() - data.frozen.toBigInt() : 0n).toString(),
   }, null, 2));

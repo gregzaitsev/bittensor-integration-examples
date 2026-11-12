@@ -10,10 +10,12 @@ try {
   const tx = api.tx.balances.transferKeepAlive(bobAddress, amountRao);
   const nonce = await api.rpc.system.accountNextIndex(aliceAddress);
   let payload;
+  // This error stops signAsync after payload creation, before signing.
   const captured = new Error('Payload captured.');
   // Let the SDK build the full payload, but stop before signing.
   try {
     await tx.signAsync(aliceAddress, {
+      // 256 blocks gives time to move files; it is a demo choice.
       nonce, era: 256,
       signer: {
         async signPayload(value) {
@@ -26,9 +28,12 @@ try {
     if (error !== captured) throw error;
   }
   if (!payload) throw new Error('No signing payload.');
+  // Do not save old signing fields with metadata from a newer runtime.
   if (!api.runtimeVersion.specVersion.eq(payload.specVersion)) {
     throw new Error('Runtime changed during preparation. Prepare again.');
   }
+  // Include metadata so the offline script can decode the call without RPC.
+  // wx refuses to overwrite a file; 0600 limits access to its owner.
   await writeFile(file, JSON.stringify({
     metadata: api.runtimeMetadata.toHex(), payload,
   }, null, 2) + '\n', { mode: 0o600, flag: 'wx' });

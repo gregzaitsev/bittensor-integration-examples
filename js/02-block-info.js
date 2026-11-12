@@ -3,6 +3,7 @@ import { connect } from './helpers/connect.js';
 const api = await connect();
 try {
   const height = process.argv[2];
+  // With no height, show the latest finalized block.
   const hash = height === undefined
     ? await api.rpc.chain.getFinalizedHead()
     : await api.rpc.chain.getBlockHash(height);

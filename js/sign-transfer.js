@@ -13,12 +13,14 @@ const api = await connect();
 try {
   const tx = api.tx.balances.transferKeepAlive(bobAddress, amountRao);
   const nonce = await api.rpc.system.accountNextIndex(alice.address);
-  // Polkadot.js adds current runtime metadata and a mortal era.
+  // Polkadot.js adds current signing fields; 64 blocks is the demo expiry.
   await tx.signAsync(alice, { nonce, era: 64 });
+  // wx refuses to overwrite a file; 0600 limits access to its owner.
   await writeFile(file, tx.toHex() + '\n', { mode: 0o600, flag: 'wx' });
   console.log(JSON.stringify({ sender: alice.address, hash: tx.hash.toHex(), file }, null, 2));
   // Signing does not broadcast. Submit before the mortal era expires.
 } finally {
+  // Lock the key even if signing or writing the file fails.
   alice.lock();
   await api.disconnect();
 }

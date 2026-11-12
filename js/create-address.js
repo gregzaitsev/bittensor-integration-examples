@@ -2,6 +2,7 @@ import { Keyring } from '@polkadot/keyring';
 import { cryptoWaitReady, mnemonicGenerate } from '@polkadot/util-crypto';
 
 await cryptoWaitReady();
+// Generate a new random account, separate from the Alice/Bob demo accounts.
 const mnemonic = mnemonicGenerate();
 const keyring = new Keyring({ type: 'sr25519', ss58Format: 42 });
 const account = keyring.addFromUri(mnemonic);
